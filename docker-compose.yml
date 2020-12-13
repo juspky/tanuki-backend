@@ -1,0 +1,10 @@
+version: "3.9"
+services:
+  web:
+    image: "smarthomebackend:latest"
+    privileged: true
+    network_mode: "host"
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./data:/app/data
