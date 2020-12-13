@@ -1,4 +1,4 @@
-FROM arm64v8/node:15
+FROM node:15
 EXPOSE 8080
 
 COPY . /app
