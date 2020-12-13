@@ -1,7 +1,7 @@
-version: "3.9"
+version: "3.3"
 services:
-  web:
-    image: "smarthomebackend:latest"
+  backend:
+    image: "juspky/tanuki-backend:latest"
     privileged: true
     network_mode: "host"
     ports:
