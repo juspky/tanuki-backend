@@ -1,7 +1,7 @@
 import express from "express";
 import cors from "cors";
 import SequelizeConn, { Yeelight } from "../Sequelize";
-import YeeLights from "../Yeelight";
+import { YeeDevices } from "../Yeelight";
 
 const InitAPI = () => {
   const app = express();
@@ -19,7 +19,7 @@ const InitAPI = () => {
   });
 
   app.get("/devices", async (req, res) => {
-    const yeelights = await Yeelight.findAll();
+    const yeelights = YeeDevices.map((y) => y.db);
     res.send({
       yeelights,
     });
@@ -27,9 +27,9 @@ const InitAPI = () => {
 
   app.get("/devices/yeelight/:id/power", async (req, res) => {
     const id = req.params.id;
-    const power = req.query.state;
-    const light = YeeLights.find((y) => y.id === id);
-    light.setPower(power);
+    const power = req.query.state === "true" ? true : false;
+    const light = YeeDevices.find((y) => y.db.id === id);
+    light.device.setPower(power);
 
     res.sendStatus(200);
   });
@@ -39,10 +39,10 @@ const InitAPI = () => {
     const r = req.query.r as string;
     const g = req.query.g as string;
     const b = req.query.b as string;
-    console.log(r, g, b);
-    const light = YeeLights.find((y) => y.id === id);
+    const light = YeeDevices.find((y) => y.db.id === id);
+
     try {
-      await light.setRGB([parseInt(r), parseInt(g), parseInt(b)], 250);
+      //await light.setRGB([parseInt(r), parseInt(g), parseInt(b)], 250);
     } catch (error) {
       res.sendStatus(403);
       return;

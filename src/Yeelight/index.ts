@@ -1,63 +1,79 @@
-import { Lookup } from "node-yeelight-wifi";
+import { Discovery, Device } from "yeelight-platform";
 import { Yeelight } from "../Sequelize";
+import { YeelightInstance } from "../Sequelize/Models/Yeelight";
+import { DiscoverResponse } from "./types";
 
-const YeeLights = [];
+const devices: { db: YeelightInstance; device: any }[] = [];
 
-// TODO: Disconnect does not work needs to be fixed in https://github.com/Bastl34/node-yeelight-wifi
-const InitYeelight = () => {
-  let look = new Lookup();
+const addDevice = (yeelight: YeelightInstance) => {
+  if (devices.some((d) => d.db.id === yeelight.id)) return;
 
-  look.on("detected", async (light) => {
-    YeeLights.push(light);
+  const device = new Device({ host: yeelight.host, port: yeelight.port });
+  devices.push({ db: yeelight, device: device });
+  device.connect();
 
-    const [DBLight] = await Yeelight.upsert({
-      id: light.id,
-      power: light.power,
-      type: light.type,
-      connected: true,
-      brightness: light.bright,
-      rgbR: light.rgb.r,
-      rgbG: light.rgb.g,
-      rgbB: light.rgb.b,
-      hsbH: light.hsb.h,
-      hsbS: light.hsb.s,
-      hsbB: light.hsb.b,
+  device.on("deviceUpdate", (newProps) => {
+    console.log("update", newProps);
+  });
+
+  device.on("connected", async () => {
+    yeelight.connected = true;
+    await yeelight.save();
+  });
+
+  device.on("disconnected", async () => {
+    yeelight.connected = false;
+    await yeelight.save();
+  });
+
+  device.setPower = (power: boolean) => {
+    console.log({
+      id: 1,
+      method: "set_power",
+      params: [power ? "on" : "off", "smooth", 300],
     });
+    device.sendCommand({
+      id: 1,
+      method: "set_power",
+      params: [power ? "on" : "off", "smooth", 300],
+    });
+  };
+};
 
-    //socket connect and disconnect events
-    light.on("connected", async () => {
-      DBLight.connected = true;
-      await DBLight.save();
-    });
-    light.on("disconnected", async () => {
-      DBLight.connected = false;
-      await DBLight.save();
-    });
+const StartYeelightDiscoveryService = async () => {
+  const discoveryService = new Discovery();
 
-    //if the color or power state has changed
-    light.on("stateUpdate", async (light) => {
-      Object.assign(DBLight, {
-        ...DBLight,
-        power: light.power,
-        type: light.type,
-        connected: true,
-        brightness: light.bright,
-        rgbR: light.rgb.r,
-        rgbG: light.rgb.g,
-        rgbB: light.rgb.b,
-        hsbH: light.hsb.h,
-        hsbS: light.hsb.s,
-        hsbB: light.hsb.b,
-      });
-      await DBLight.save();
-    });
+  discoveryService.on("started", () => {
+    console.log("** YeeDiscovery Started **");
+  });
 
-    //if something went wrong
-    light.on("failed", (error) => {
-      console.log(error);
-    });
+  discoveryService.on("didDiscoverDevice", (device: DiscoverResponse) => {
+    console.log("Discover", device);
+    insertDiscoveredYeelight(device);
+  });
+
+  discoveryService.listen();
+  const yeelights = await Yeelight.findAll();
+  yeelights.forEach((y) => {
+    addDevice(y);
   });
 };
 
-export default YeeLights;
-export { InitYeelight };
+const insertDiscoveredYeelight = async (device: DiscoverResponse) => {
+  const [yeelight] = await Yeelight.upsert({
+    id: device.id,
+    host: device.host,
+    port: parseInt(device.port),
+    type: device.model,
+    brightness: parseInt(device.bright),
+    rgb: parseInt(device.rgb),
+    hue: parseInt(device.hue),
+    sat: parseInt(device.sat),
+    ct: parseInt(device.ct),
+    power: device.power === "on" ? true : false,
+  });
+
+  addDevice(yeelight);
+};
+
+export { StartYeelightDiscoveryService, devices as YeeDevices };

@@ -3,23 +3,23 @@ import SequelizeConn from "..";
 
 interface YeelightAttributes {
   id: string;
-  name?: string;
-  type: "color" | "white" | "unknown";
-  power: boolean;
+  host: string;
+  port: number;
   connected: boolean;
+  power: boolean;
+  name?: string;
+  type: string;
   brightness: number;
-  rgbR: number;
-  rgbG: number;
-  rgbB: number;
-  hsbH: number;
-  hsbS: number;
-  hsbB: number;
+  rgb: number;
+  sat: number;
+  hue: number;
+  ct: number;
 }
 
 interface YeelightCreationAttributes
-  extends Optional<YeelightAttributes, "type"> {}
+  extends Optional<YeelightAttributes, "type" | "connected"> {}
 
-interface YeelightInstance
+export interface YeelightInstance
   extends Model<YeelightAttributes, YeelightCreationAttributes>,
     YeelightAttributes {}
 
@@ -32,6 +32,12 @@ const YeelightModel = (sequelize: Sequelize) => {
         primaryKey: true,
         allowNull: false,
       },
+      host: {
+        type: DataTypes.STRING,
+      },
+      port: {
+        type: DataTypes.INTEGER,
+      },
       name: {
         type: DataTypes.STRING,
       },
@@ -39,32 +45,27 @@ const YeelightModel = (sequelize: Sequelize) => {
         type: DataTypes.STRING,
         defaultValue: "unknown",
       },
+      brightness: {
+        type: DataTypes.INTEGER,
+      },
+      rgb: {
+        type: DataTypes.INTEGER,
+      },
+      hue: {
+        type: DataTypes.INTEGER,
+      },
+      sat: {
+        type: DataTypes.INTEGER,
+      },
+      ct: {
+        type: DataTypes.INTEGER,
+      },
       power: {
         type: DataTypes.BOOLEAN,
       },
       connected: {
         type: DataTypes.BOOLEAN,
-      },
-      brightness: {
-        type: DataTypes.INTEGER,
-      },
-      rgbR: {
-        type: DataTypes.INTEGER,
-      },
-      rgbG: {
-        type: DataTypes.INTEGER,
-      },
-      rgbB: {
-        type: DataTypes.INTEGER,
-      },
-      hsbH: {
-        type: DataTypes.INTEGER,
-      },
-      hsbS: {
-        type: DataTypes.INTEGER,
-      },
-      hsbB: {
-        type: DataTypes.INTEGER,
+        defaultValue: false,
       },
     },
     {
@@ -72,7 +73,7 @@ const YeelightModel = (sequelize: Sequelize) => {
     }
   );
 
-  Yeelight.sync({ force: true });
+  //Yeelight.sync({ force: true });
 
   return Yeelight;
 };
