@@ -2,10 +2,11 @@ import "./Sequelize";
 
 import InitAPI from "./API";
 import { InitYeelight } from "./Yeelight";
+import _ from "lodash";
 
-const Init = async () => {
+const Init = () => {
   InitYeelight();
   InitAPI();
 };
 
-Init();
+_.delay(Init, 1000);
