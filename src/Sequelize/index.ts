@@ -5,8 +5,8 @@ const SequelizeConn = new Sequelize({
     storage: './data/database.sqlite'
 });
 
-export const InitDB = () => {
-    import("./Models/Yeelight");
+export const InitDB = async () => {
+    await import("./Models/Yeelight");
 }
 
 export default SequelizeConn
