@@ -27,11 +27,6 @@ const addDevice = (yeelight: YeelightInstance) => {
   });
 
   device.setPower = (power: boolean) => {
-    console.log({
-      id: 1,
-      method: "set_power",
-      params: [power ? "on" : "off", "smooth", 300],
-    });
     device.sendCommand({
       id: 1,
       method: "set_power",
