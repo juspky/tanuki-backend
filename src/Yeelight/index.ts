@@ -1,5 +1,5 @@
 import { Lookup } from "node-yeelight-wifi";
-import Yeelight from "../Sequelize/Models/Yeelight";
+import { Yeelight } from "../Sequelize";
 
 const YeeLights = [];
 

@@ -1,7 +1,6 @@
 import express from "express";
 import cors from "cors";
-import SequelizeConn from "../Sequelize";
-import Yeelight from "../Sequelize/Models/Yeelight";
+import SequelizeConn, { Yeelight } from "../Sequelize";
 import YeeLights from "../Yeelight";
 
 const InitAPI = () => {
