@@ -8,11 +8,16 @@
     "build": "tsc"
   },
   "dependencies": {
+    "@types/node": "^14.14.14",
+    "@types/ws": "^7.4.0",
+    "audio-analyser": "^1.0.2",
     "cors": "^2.8.5",
     "express": "^4.17.1",
     "lodash": "^4.17.20",
+    "naudiodon": "^2.3.0",
     "sequelize": "^6.3.5",
     "sqlite3": "^5.0.0",
+    "ws": "^7.4.1",
     "yeelight-platform": "^1.0.9"
   },
   "devDependencies": {
