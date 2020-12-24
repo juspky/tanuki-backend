@@ -2,7 +2,7 @@ import WebSocket from "ws";
 import Analyser from "audio-analyser";
 import portAudio from "naudiodon";
 
-const wss = new WebSocket.Server({ port: 8081 });
+const wss = new WebSocket.Server({ port: parseInt(process.env.WS_PORT) || 8081 });
 
 const InitAudio = () => {
   const ai = portAudio.AudioIO({
