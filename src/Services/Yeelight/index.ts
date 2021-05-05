@@ -1,39 +1,11 @@
-import { Discovery, Device } from "yeelight-platform";
-import { Yeelight } from "../Sequelize";
-import { YeelightInstance } from "../Sequelize/Models/Yeelight";
+import { Discovery } from "yeelight-platform";
+import { Yeelight } from "../../Sequelize";
+import { YeelightInstance } from "../../Sequelize/Models/Yeelight";
+import { RegisterCallback } from "../Audio";
+import YeeDevice from "./device";
 import { DiscoverResponse } from "./types";
 
-const devices: { db: YeelightInstance; device: any }[] = [];
-
-const addDevice = (yeelight: YeelightInstance) => {
-  if (devices.some((d) => d.db.id === yeelight.id)) return;
-
-  const device = new Device({ host: yeelight.host, port: yeelight.port });
-  devices.push({ db: yeelight, device: device });
-  device.connect();
-
-  device.on("deviceUpdate", (newProps) => {
-    console.log("update", newProps);
-  });
-
-  device.on("connected", async () => {
-    yeelight.connected = true;
-    await yeelight.save();
-  });
-
-  device.on("disconnected", async () => {
-    yeelight.connected = false;
-    await yeelight.save();
-  });
-
-  device.setPower = (power: boolean) => {
-    device.sendCommand({
-      id: 1,
-      method: "set_power",
-      params: [power ? "on" : "off", "smooth", 300],
-    });
-  };
-};
+const devices: { db: YeelightInstance; device: YeeDevice }[] = [];
 
 const StartYeelightDiscoveryService = async () => {
   const discoveryService = new Discovery();
@@ -52,6 +24,8 @@ const StartYeelightDiscoveryService = async () => {
   yeelights.forEach((y) => {
     addDevice(y);
   });
+
+  //RegisterCallback(AudioFrequencyCallback);
 };
 
 const insertDiscoveredYeelight = async (device: DiscoverResponse) => {
@@ -69,6 +43,28 @@ const insertDiscoveredYeelight = async (device: DiscoverResponse) => {
   });
 
   addDevice(yeelight);
+};
+
+const addDevice = (yeelight: YeelightInstance) => {
+  if (devices.some((d) => d.db.id === yeelight.id)) return;
+
+  const device = new YeeDevice({ host: yeelight.host, port: yeelight.port });
+  devices.push({ db: yeelight, device: device });
+  device.connect();
+
+  device.on("deviceUpdate", (newProps) => {
+    console.log("update", newProps);
+  });
+
+  device.on("connected", async () => {
+    yeelight.connected = true;
+    await yeelight.save();
+  });
+
+  device.on("disconnected", async () => {
+    yeelight.connected = false;
+    await yeelight.save();
+  });
 };
 
 export { StartYeelightDiscoveryService, devices as YeeDevices };

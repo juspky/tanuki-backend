@@ -1,9 +1,9 @@
 import express from "express";
 import cors from "cors";
 import SequelizeConn, { Yeelight } from "../Sequelize";
-import { YeeDevices } from "../Yeelight";
+import { YeeDevices } from "../Services/Yeelight";
 
-const InitAPI = () => {
+const InitAPI = (port?: number) => {
   const app = express();
   app.use(cors());
   app.use((req, res, next) => {
@@ -12,7 +12,7 @@ const InitAPI = () => {
   });
   app.set("etag", false);
 
-  const port = process.env.PORT || 8080;
+  const _port = port || 8080;
 
   app.get("/", (req, res) => {
     res.send("Hello World!");
@@ -34,6 +34,15 @@ const InitAPI = () => {
     res.sendStatus(200);
   });
 
+  app.get("/devices/yeelight/:id/musicMode", async (req, res) => {
+    const id = req.params.id;
+    const state = req.query.state === "true" ? true : false;
+    const light = YeeDevices.find((y) => y.db.id === id);
+    light.device.setMusicMode(state ? "music" : "normal");
+
+    res.sendStatus(200);
+  });
+
   app.get("/devices/yeelight/:id/rgb", async (req, res) => {
     const id = req.params.id;
     const r = req.query.r as string;
@@ -51,8 +60,8 @@ const InitAPI = () => {
     res.sendStatus(200);
   });
 
-  app.listen(port, () => {
-    console.log(`Example app listening at http://localhost:${port}`);
+  app.listen(_port, () => {
+    console.log(`API listening at http://localhost:${_port}`);
   });
 };
 

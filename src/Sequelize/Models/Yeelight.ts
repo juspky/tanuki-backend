@@ -73,7 +73,7 @@ const YeelightModel = (sequelize: Sequelize) => {
     }
   );
 
-  Yeelight.sync({ force: true });
+  //Yeelight.sync({ force: true });
 
   return Yeelight;
 };
